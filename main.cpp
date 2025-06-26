@@ -60,6 +60,7 @@ void setSize(int& x, int& y, int& bombs)
                     else if (my >= 450 && my <= 550)
                     {
                         x = 22; y = 22; bombs = 99;
+                        window.close();
                     }
                 }
             }
@@ -77,33 +78,48 @@ void setSize(int& x, int& y, int& bombs)
     }
 }
 
+void open(std::vector<std::vector<Cell>>* &vec, int a, int b)
+{
+    for (int i = a - 1; i < a + 2; i++)
+    {
+        for (int j = b - 1; j < b + 2; j++)
+        {
+            if (i > -1 && i < vec->size() && j > -1 && j < (*vec)[a].size() && (*vec)[i][j].stat != 2)
+            {
+                (*vec)[i][j].stat = 1;
+                //if ((*vec)[i][j].num == 0 && !(a == i && b == j)) open(vec, i, j);
+            }
+        }
+    }
+}
+
 int main()
 {
-    int x, y, bombs, flags = 0;
+    int x = 8, y = 8, bombs = 10, flags = 0;
 
     setSize(x, y, bombs);
 
-    sf::RenderWindow window(sf::VideoMode({x*40, y*40}), "Minesweeper");
-    sf::RenderWindow* windowPointer = &window;
+    sf::RenderWindow window(sf::VideoMode({x * 40, y * 40}), "Minesweeper");
+    sf::RenderWindow* windowPtr = &window;
 
     sf::Font font;
     font.loadFromFile("MesloLGS NF Regular.ttf");
-    sf::Font* fontPointer = &font;
-    
-    auto gameOver {[windowPointer, fontPointer]()
+    sf::Font* fontPtr = &font;
+
+    Field field(x, y, bombs);
+
+    auto gameOver {[windowPtr, fontPtr]()
     {
         sf::RenderWindow goScreen(sf::VideoMode({280, 100}), "Game Over");
-        sf::Text message("Game Over", (*fontPointer));
+        sf::Text message("Game Over", (*fontPtr));
         message.setCharacterSize(50);
         message.setFillColor(sf::Color::Red);
         goScreen.draw(message);
         goScreen.display();
         sleep(1);
         goScreen.close();
-        (*windowPointer).close();
+        (*windowPtr).close();
     }};
-
-    Field field(x, y, bombs);
 
     while (window.isOpen())
     {
@@ -137,19 +153,11 @@ int main()
                                 }
                             }
                         }
-
+                        
                         if (flagsAround == minesAround)
                         {
-                            for (int a = mx - 1; a < mx + 2; a++)
-                            {
-                                for (int b = my - 1; b < my + 2; b++)
-                                {
-                                    if (a > -1 && a < x && b > -1 && b < y)
-                                    {
-                                        if (!field.field[a][b].isMine) field.field[a][b].stat = 1;
-                                    }
-                                }
-                            }
+                            std::vector<std::vector<Cell>>* fieldPtr = &field.field;
+                            open(fieldPtr, mx, my);
 
                             if (minesAround != flagedMines) gameOver();
                         }
