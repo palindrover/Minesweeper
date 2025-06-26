@@ -167,7 +167,7 @@ int main()
 
                 case sf::Mouse::Right:
                     if (field.field[mx][my].stat == 2) field.field[mx][my].stat = 0;
-                    else
+                    else if (field.field[mx][my].stat == 0)
                     {
                         field.field[mx][my].stat = 2;
                         if (field.field[mx][my].isMine) flags++;
