@@ -6,9 +6,25 @@
 int main()
 {
     sf::RenderWindow window(sf::VideoMode({320, 320}), "Minesweeper");
+    sf::RenderWindow* windowPointer = &window;
 
     sf::Font font;
     font.loadFromFile("MesloLGS NF Regular.ttf");
+    sf::Font* fontPointer = &font;
+
+    auto gameOver {[windowPointer, fontPointer]()
+    {
+        sf::RenderWindow goScreen(sf::VideoMode({280, 100}), "Game Over");
+        sf::Text message("Game Over", (*fontPointer));
+        message.setCharacterSize(50);
+        message.setFillColor(sf::Color::Red);
+        goScreen.draw(message);
+        goScreen.display();
+        sleep(1);
+        goScreen.close();
+        (*windowPointer).close();
+    }};
+
 
     int x = 8, y = 8, bombs = 10, flags = 0;
 
@@ -30,20 +46,42 @@ int main()
                 switch (event.key.code)
                 {
                 case sf::Mouse::Left:
-                    if (field.field[mx][my].isMine)
+                    if (field.field[mx][my].isMine) gameOver();
+                    else if (field.field[mx][my].stat == 1 || field.field[mx][my].num == 0)
                     {
-                        sf::RenderWindow goScreen(sf::VideoMode({280, 100}), "Game Over");
-                        sf::Text message("Game Over", font);
-                        message.setCharacterSize(50);
-                        message.setFillColor(sf::Color::Red);
-                        goScreen.draw(message);
-                        goScreen.display();
-                        sleep(1);
-                        goScreen.close();
-                        window.close();
+                        int flagsAround = 0, minesAround = 0, flagedMines = 0;
+                        for (int a = mx - 1; a < mx + 2; a++)
+                        {
+                            for (int b = my - 1; b < my + 2; b++)
+                            {
+                                if (a > -1 && a < x && b > -1 && b < y)
+                                {
+                                    if (field.field[a][b].isMine) minesAround++;
+                                    if (field.field[a][b].stat == 2) flagsAround++;
+                                    if (field.field[a][b].isMine && field.field[a][b].stat == 2) flagedMines++;
+                                }
+                            }
+                        }
+
+                        if (flagsAround == minesAround)
+                        {
+                            for (int a = mx - 1; a < mx + 2; a++)
+                            {
+                                for (int b = my - 1; b < my + 2; b++)
+                                {
+                                    if (a > -1 && a < x && b > -1 && b < y)
+                                    {
+                                        if (!field.field[a][b].isMine) field.field[a][b].stat = 1;
+                                    }
+                                }
+                            }
+
+                            if (minesAround != flagedMines) gameOver();
+                        }
                     }
                     else field.field[mx][my].stat = 1;
                     break;
+                    
                 case sf::Mouse::Right:
                     if (field.field[mx][my].stat == 2) field.field[mx][my].stat = 0;
                     else
