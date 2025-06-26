@@ -10,7 +10,7 @@ class Field
 {
 public:
     std::vector<std::vector<Cell>> field;
-    Field(int x, int y);
+    Field(int x, int y, int bombs);
     ~Field();
 };
 

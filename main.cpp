@@ -3,15 +3,93 @@
 #include "field.h"
 #include <unistd.h>
 
+void setSize(int& x, int& y, int& bombs)
+{
+    sf::Font font;
+    font.loadFromFile("MesloLGS NF Regular.ttf");
+
+    sf::RenderWindow window(sf::VideoMode({800, 600}), "Set size");
+    sf::RectangleShape box[3];
+    sf::Text text[3];
+
+    for (int i = 0; i < 3; i++)
+    {
+        box[i].setSize({300, 100});
+        box[i].setFillColor(sf::Color::White);
+        box[i].setOutlineColor(sf::Color::Black);
+        box[i].setOutlineThickness(3);
+
+        text[i].setFont(font);
+        text[i].setCharacterSize(40);
+        text[i].setFillColor(sf::Color::Black);
+    }
+
+    box[0].setPosition({250, 50});
+    box[1].setPosition({250, 250});
+    box[2].setPosition({250, 450});
+
+    text[0].setString("Size: 8x8\nMines: 10");
+    text[0].setPosition({250, 50});
+    text[1].setString("Size: 16x16\nMines: 40");
+    text[1].setPosition({250, 250});
+    text[2].setString("Size: 22x22\nMines: 99");
+    text[2].setPosition({250, 450});
+
+    while (window.isOpen())
+    {
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed) window.close();
+            else if (event.type == sf::Event::MouseButtonReleased && event.key.code == sf::Mouse::Left)
+            {
+                int mx = sf::Mouse::getPosition(window).x, my = sf::Mouse::getPosition(window).y;
+
+                if (mx >= 250 && mx <= 550)
+                {
+                    if (my >= 50 && my <= 150)
+                    {
+                        x = 8; y = 8; bombs = 10;
+                        window.close();
+                    }
+                    else if (my >= 250 && my <= 350)
+                    {
+                        x = 16; y = 16; bombs = 40;
+                        window.close();
+                    }
+                    else if (my >= 450 && my <= 550)
+                    {
+                        x = 22; y = 22; bombs = 99;
+                    }
+                }
+            }
+        }
+
+        window.clear();
+
+        for (int i = 0; i < 3; i++)
+        {
+            window.draw(box[i]);
+            window.draw(text[i]);
+        }
+
+        window.display();
+    }
+}
+
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({320, 320}), "Minesweeper");
+    int x, y, bombs, flags = 0;
+
+    setSize(x, y, bombs);
+
+    sf::RenderWindow window(sf::VideoMode({x*40, y*40}), "Minesweeper");
     sf::RenderWindow* windowPointer = &window;
 
     sf::Font font;
     font.loadFromFile("MesloLGS NF Regular.ttf");
     sf::Font* fontPointer = &font;
-
+    
     auto gameOver {[windowPointer, fontPointer]()
     {
         sf::RenderWindow goScreen(sf::VideoMode({280, 100}), "Game Over");
@@ -25,10 +103,7 @@ int main()
         (*windowPointer).close();
     }};
 
-
-    int x = 8, y = 8, bombs = 10, flags = 0;
-
-    Field field(x, y);
+    Field field(x, y, bombs);
 
     while (window.isOpen())
     {
@@ -81,7 +156,7 @@ int main()
                     }
                     else field.field[mx][my].stat = 1;
                     break;
-                    
+
                 case sf::Mouse::Right:
                     if (field.field[mx][my].stat == 2) field.field[mx][my].stat = 0;
                     else

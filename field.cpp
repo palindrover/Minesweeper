@@ -1,12 +1,8 @@
 #include "field.h"
 
-Field::Field(int x, int y)
+Field::Field(int x, int y, int bombs)
 {
     field.resize(x, std::vector<Cell>(y));
-
-    int bombs = 0;
-
-    if (x == 8 && y == 8) bombs = 10;
 
     srand(time(NULL));
 
