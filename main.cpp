@@ -19,12 +19,17 @@ int main()
         sf::Event event;
         while (window.pollEvent(event))
         {
-            if (event.type == sf::Event::Closed) window.close();
-            else if (event.type == sf::Event::MouseButtonReleased)
+            switch (event.type)
             {
+            case sf::Event::Closed:
+                window.close();
+                break;
+
+            case sf::Event::MouseButtonReleased:
                 int mx = sf::Mouse::getPosition(window).x / 40, my = sf::Mouse::getPosition(window).y / 40;
-                if (event.key.code == sf::Mouse::Left)
+                switch (event.key.code)
                 {
+                case sf::Mouse::Left:
                     if (field.field[mx][my].isMine)
                     {
                         sf::RenderWindow goScreen(sf::VideoMode({280, 100}), "Game Over");
@@ -38,16 +43,17 @@ int main()
                         window.close();
                     }
                     else field.field[mx][my].stat = 1;
-                }
-                else if (event.key.code == sf::Mouse::Right)
-                {
+                    break;
+                case sf::Mouse::Right:
                     if (field.field[mx][my].stat == 2) field.field[mx][my].stat = 0;
                     else
                     {
                         field.field[mx][my].stat = 2;
                         if (field.field[mx][my].isMine) flags++;
                     }
+                    break;
                 }
+                break;
             }
         }
 
