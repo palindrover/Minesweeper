@@ -87,13 +87,13 @@ void open(std::vector<std::vector<Cell>>* &vec, int a, int b)
             if (i > -1 && i < vec->size() && j > -1 && j < (*vec)[a].size() && (*vec)[i][j].stat != 2)
             {
                 (*vec)[i][j].stat = 1;
-                //if ((*vec)[i][j].num == 0 && !(a == i && b == j)) open(vec, i, j);
+                //if ((*vec)[i][j].num == 0) open(vec, i, j);
             }
         }
     }
 }
 
-int main()
+void loop()
 {
     int x = 8, y = 8, bombs = 10, flags = 0;
 
@@ -104,14 +104,13 @@ int main()
 
     sf::Font font;
     font.loadFromFile("MesloLGS NF Regular.ttf");
-    sf::Font* fontPtr = &font;
 
     Field field(x, y, bombs);
 
-    auto gameOver {[windowPtr, fontPtr]()
+    auto gameOver {[windowPtr, font]()
     {
         sf::RenderWindow goScreen(sf::VideoMode({280, 100}), "Game Over");
-        sf::Text message("Game Over", (*fontPtr));
+        sf::Text message("Game Over", font);
         message.setCharacterSize(50);
         message.setFillColor(sf::Color::Red);
         goScreen.draw(message);
@@ -137,7 +136,12 @@ int main()
                 switch (event.key.code)
                 {
                 case sf::Mouse::Left:
-                    if (field.field[mx][my].isMine) gameOver();
+                    if (field.field[mx][my].isMine)
+                    {
+                        gameOver();
+                        sleep(1);
+                        loop();
+                    }
                     else if (field.field[mx][my].stat == 1 || field.field[mx][my].num == 0)
                     {
                         int flagsAround = 0, minesAround = 0, flagedMines = 0;
@@ -153,13 +157,18 @@ int main()
                                 }
                             }
                         }
-                        
+
                         if (flagsAround == minesAround)
                         {
                             std::vector<std::vector<Cell>>* fieldPtr = &field.field;
                             open(fieldPtr, mx, my);
 
-                            if (minesAround != flagedMines) gameOver();
+                            if (minesAround != flagedMines)
+                            {
+                                gameOver();
+                                sleep(1);
+                                loop();
+                            }
                         }
                     }
                     else field.field[mx][my].stat = 1;
@@ -223,8 +232,16 @@ int main()
             sleep(1);
             winScreen.close();
             window.close();
+            sleep(1);
+            loop();
         }
     }
+
+}
+
+int main()
+{
+    loop();
 
     return 0;
 }
